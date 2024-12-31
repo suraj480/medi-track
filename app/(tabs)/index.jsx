@@ -1,3 +1,4 @@
+import { Redirect } from 'expo-router';
 import { View, Text } from 'react-native';
 export default function HomeScreen() {
   return (
@@ -5,6 +6,7 @@ export default function HomeScreen() {
       <Text>
         Home screen
       </Text>
+      <Redirect href={'login'} />
     </View>
   );
 }
