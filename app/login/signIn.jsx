@@ -11,6 +11,7 @@ import Colors from "../../constant/Colors";
 import { useRouter } from "expo-router";
 import { auth } from "../../config/FireBaseConfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { setLocalStorage } from "../../service/Storage";
 export default function signIn() {
   const router = useRouter();
   const [email, setEmail] = useState();
@@ -21,16 +22,18 @@ export default function signIn() {
       return;
     }
     signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
+      .then(async (userCredential) => {
         // Signed in
         const user = userCredential.user;
         router.replace("(tabs)");
+        await setLocalStorage("userDetail", user);
+        router.replace("/(tabs)");
         // ...
       })
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
-        console.log("errr",errorCode)
+        console.log("errr", errorCode);
         if (errorCode == "auth/invalid-credential" || "auth/wrong-password") {
           Alert.alert("Invalid email or password");
         }

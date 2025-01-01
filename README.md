@@ -30,4 +30,8 @@ Icons used from https://icons.expo.fyi/Index
 8. paste SDK in FirebaseConfig.jsx
 9. enable email/password authnetication in console(under singIn method)
 10. https://firebase.google.com/docs/auth/web/password-auth#create_a_password-based_account take code of createUserWithEmailAndPassword and paste in signUp.jsx
-11. 
+
+### adding async-storage
+ ```bash
+ npx expo install @react-native-async-storage/async-storage
+  ```
