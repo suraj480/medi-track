@@ -4,12 +4,38 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import Colors from "../../constant/Colors";
 import { useRouter } from "expo-router";
+import { auth } from "../../config/FireBaseConfig";
+import { signInWithEmailAndPassword } from "firebase/auth";
 export default function signIn() {
   const router = useRouter();
+  const [email, setEmail] = useState();
+  const [password, setPassword] = useState();
+  const OnSignInClick = () => {
+    if (!email || !password) {
+      Alert.alert("Please enter email and password!");
+      return;
+    }
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        router.replace("(tabs)");
+        // ...
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log("errr",errorCode)
+        if (errorCode == "auth/invalid-credential" || "auth/wrong-password") {
+          Alert.alert("Invalid email or password");
+        }
+      });
+  };
 
   return (
     <View
@@ -27,7 +53,11 @@ export default function signIn() {
         }}
       >
         <Text>Email</Text>
-        <TextInput placeholder="Email" style={Styles.textInput} />
+        <TextInput
+          placeholder="Email"
+          style={Styles.textInput}
+          onChangeText={(value) => setEmail(value)}
+        />
       </View>
       <View
         style={{
@@ -39,10 +69,11 @@ export default function signIn() {
           placeholder="Password"
           style={Styles.textInput}
           secureTextEntry={true}
+          onChangeText={(value) => setPassword(value)}
         />
       </View>
 
-      <TouchableOpacity style={Styles.button}>
+      <TouchableOpacity style={Styles.button} onPress={OnSignInClick}>
         <Text
           style={{
             fontSize: 17,

@@ -10,7 +10,7 @@ import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import Colors from "../../constant/Colors";
 import { auth } from "../../config/FireBaseConfig";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 
 export default function SignUp() {
   const router = useRouter();
@@ -19,17 +19,20 @@ export default function SignUp() {
   const [name, setName] = useState();
   // console.log("DATA=",email,password)
   const OnCreateAccount = () => {
-    if (!email || !password) {
+    if (!email || !password|| !name) {
       ToastAndroid.show("Please fill all details", ToastAndroid.BOTTOM);
       return;
     }
 
     createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
+      .then(async(userCredential) => {
         // Signed up
-        const user = userCredential.user;
+        const   user = userCredential.user;
+        await updateProfile(user,{
+          displayName:name
+        })
         console.log("user=", user);
-        router.push("/login/signIn");
+        router.push("(tabs)");
         // ...
       })
       .catch((error) => {
