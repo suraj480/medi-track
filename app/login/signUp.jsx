@@ -4,13 +4,49 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  ToastAndroid,
 } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import Colors from "../../constant/Colors";
+import { auth } from "../../config/FireBaseConfig";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 
 export default function SignUp() {
   const router = useRouter();
+  const [email, setEmail] = useState();
+  const [password, setPassword] = useState();
+  const [name, setName] = useState();
+  // console.log("DATA=",email,password)
+  const OnCreateAccount = () => {
+    if (!email || !password) {
+      ToastAndroid.show("Please fill all details", ToastAndroid.BOTTOM);
+      return;
+    }
+
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed up
+        const user = userCredential.user;
+        console.log("user=", user);
+        router.push("/login/signIn");
+        // ...
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log("errorCode=", errorCode);
+        if (errorCode === "auth/email-already-in-use") {
+          ToastAndroid.show("Email already exists", ToastAndroid.BOTTOM);
+        } else if (errorCode === "auth/network-request-failed") {
+          ToastAndroid.show(
+            "Network error. Please check your internet connection.",
+            ToastAndroid.BOTTOM
+          );
+        }
+      });
+  };
+
   return (
     <View
       style={{
@@ -24,7 +60,11 @@ export default function SignUp() {
         }}
       >
         <Text>Full Name</Text>
-        <TextInput placeholder="Full Name" style={Styles.textInput} />
+        <TextInput
+          placeholder="Full Name"
+          style={Styles.textInput}
+          onChangeText={(value) => setName(value)}
+        />
       </View>
       <View
         style={{
@@ -32,7 +72,11 @@ export default function SignUp() {
         }}
       >
         <Text>Email</Text>
-        <TextInput placeholder="Email" style={Styles.textInput} />
+        <TextInput
+          placeholder="Email"
+          style={Styles.textInput}
+          onChangeText={(value) => setEmail(value)}
+        />
       </View>
       <View
         style={{
@@ -44,10 +88,11 @@ export default function SignUp() {
           placeholder="Password"
           style={Styles.textInput}
           secureTextEntry={true}
+          onChangeText={(value) => setPassword(value)}
         />
       </View>
 
-      <TouchableOpacity style={Styles.button}>
+      <TouchableOpacity style={Styles.button} onPress={OnCreateAccount}>
         <Text
           style={{
             fontSize: 17,
@@ -82,6 +127,7 @@ const Styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: "bold",
     marginTop: 15,
+    backgroundColor: "#ffdcd5",
   },
   subText: {
     fontSize: 30,
