@@ -5,6 +5,8 @@ import {
   TextInput,
   FlatList,
   TouchableOpacity,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -17,12 +19,17 @@ import {
   formatDateForText,
   formatTime,
 } from "../service/ConvertDateTime";
+import { getLocalStorage } from "../service/Storage";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../config/FireBaseConfig";
+import { router } from "expo-router";
 
 export default function AddMedicationForm() {
   const [formData, setFormData] = useState();
   const [showStartDate, setShowStartDate] = useState(false);
   const [showEndDate, setShowEndDate] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [loading, setLoading] = useState(false);
   const onHandleInputChanges = (field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -30,6 +37,39 @@ export default function AddMedicationForm() {
     }));
   };
 
+  const SaveMedication = async () => {
+    const docId = Date.now().toString();
+    const user = await getLocalStorage("userDetail");
+    if (
+      !(
+        formData?.name ||
+        formData?.type ||
+        formData?.dose ||
+        formData?.startDate ||
+        formData?.endDate
+      )
+    ) {
+      console.log("alert");
+      Alert.alert("Enter all fields");
+      return;
+    }
+    setLoading(true);
+
+    try {
+      await setDoc(doc(db, "medication", docId), {
+        ...formData,
+        userEmail: user?.email,
+        docId: docId,
+      });
+      setLoading(false);
+      Alert.alert("Great!", "New medication added successfully", {
+        onPress: () => router.push("(tabs)"),
+      });
+    } catch (e) {
+      setLoading(false);
+      console.log(e);
+    }
+  };
   return (
     <View
       style={{
@@ -205,8 +245,9 @@ export default function AddMedicationForm() {
           value={formData?.reminder ?? new Date()}
         />
       )}
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Add New Medication</Text>
+      <TouchableOpacity style={styles.button} onPress={SaveMedication}>
+        {loading?<ActivityIndicator size="large" color="white" />:
+        <Text style={styles.buttonText}>Add New Medication</Text>}
       </TouchableOpacity>
     </View>
   );
@@ -254,7 +295,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.PRIMARY,
     borderRadius: 15,
     width: "100%",
-    marginTop: 25
+    marginTop: 25,
   },
   buttonText: {
     fontSize: 17,
