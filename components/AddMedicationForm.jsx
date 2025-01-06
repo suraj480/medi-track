@@ -18,11 +18,12 @@ import {
   FormatDate,
   formatDateForText,
   formatTime,
+  getDatesRange,
 } from "../service/ConvertDateTime";
 import { getLocalStorage } from "../service/Storage";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../config/FireBaseConfig";
-import { router } from "expo-router";
+import { router, useRouter } from "expo-router";
 
 export default function AddMedicationForm() {
   const [formData, setFormData] = useState();
@@ -38,8 +39,13 @@ export default function AddMedicationForm() {
   };
 
   const SaveMedication = async () => {
+    console.log("CHECK-1")
     const docId = Date.now().toString();
+    console.log("CHECK-2")
     const user = await getLocalStorage("userDetail");
+    console.log("CHECK-3")
+    // const router = useRouter();
+    console.log("CHECK-4")
     if (
       !(
         formData?.name ||
@@ -50,21 +56,28 @@ export default function AddMedicationForm() {
       )
     ) {
       console.log("alert");
+      console.log("CHECK-5")
       Alert.alert("Enter all fields");
       return;
     }
+    const dates = getDatesRange(formData?.startDate, formData?.endDate);
     setLoading(true);
-
-    try {
+    console.log("CHECK-6")
+    try {console.log("CHECK-1")
       await setDoc(doc(db, "medication", docId), {
+
         ...formData,
         userEmail: user?.email,
         docId: docId,
+        dates: dates,
       });
       setLoading(false);
+      console.log("CHECK-7")
       Alert.alert("Great!", "New medication added successfully", {
+        text: "Ok",
         onPress: () => router.push("(tabs)"),
       });
+      console.log("CHECK-8")
     } catch (e) {
       setLoading(false);
       console.log(e);
@@ -171,7 +184,7 @@ export default function AddMedicationForm() {
             color="black"
           />
           <Text style={styles.textInput}>
-            {formatDateForText(FormatDate?.startDate) ?? "Start Date"}
+            {formatDateForText(formData?.startDate) ?? "Start Date"}
           </Text>
         </TouchableOpacity>
         {showStartDate && (
@@ -246,8 +259,11 @@ export default function AddMedicationForm() {
         />
       )}
       <TouchableOpacity style={styles.button} onPress={SaveMedication}>
-        {loading?<ActivityIndicator size="large" color="white" />:
-        <Text style={styles.buttonText}>Add New Medication</Text>}
+        {loading ? (
+          <ActivityIndicator size="large" color="white" />
+        ) : (
+          <Text style={styles.buttonText}>Add New Medication</Text>
+        )}
       </TouchableOpacity>
     </View>
   );
