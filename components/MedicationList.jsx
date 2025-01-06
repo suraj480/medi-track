@@ -11,10 +11,11 @@ import { GetDateRangeToDisplay } from "../service/ConvertDateTime";
 import Colors from "../constant/Colors";
 import moment from "moment";
 import { getLocalStorage } from "@/service/Storage";
-import { collection,  getDocs, query, where } from "firebase/firestore";
-import  MedicationCardItem  from "../components/MedicationCardItem";
-import EmptyState from "../components/EmptyState"
-import {db} from '../config/FireBaseConfig'
+import { collection, getDocs, query, where } from "firebase/firestore";
+import MedicationCardItem from "../components/MedicationCardItem";
+import EmptyState from "../components/EmptyState";
+import { db } from "../config/FireBaseConfig";
+import { router } from "expo-router";
 
 export default function MedicationList() {
   const [medList, setMedList] = useState();
@@ -35,9 +36,8 @@ export default function MedicationList() {
       return;
     }
     setDateRange(dateRange);
-  };;
+  };
   const GetMedicationList = async (selectedDate) => {
-   
     const user = await getLocalStorage("userDetail");
     if (!user || !user.email) {
       console.error("User is undefined or missing email.");
@@ -56,10 +56,10 @@ export default function MedicationList() {
       console.log("USERDATE-3", q);
       const querySnapshot = await getDocs(q);
       const docs = querySnapshot.docs.map((doc) => doc.data());
-      // querySnapshot.forEach((doc) => {
-      //   console.log("docId:" + doc.Id + "==>", doc.data());
-      //   setMedList((prev) => [...prev, doc.data()]);
-      // });
+      querySnapshot.forEach((doc) => {
+        console.log("docId:" + doc.Id + "==>", doc.data());
+        setMedList((prev) => [...prev, doc.data()]);
+      });
       setMedList(docs);
       console.log("Fetched medList:", docs);
       console.log("MEDLIST", medList);
@@ -85,47 +85,51 @@ export default function MedicationList() {
         horizontal
         style={{ marginTop: 15 }}
         showHorizontalScrollIndicator={false}
-        renderItem={({ item, index }) =>item ? (
-          <TouchableOpacity
-            style={[
-              styles.dateGroup,
-              {
-                backgroundColor:
-                  item.formatedDate == selectedDate
-                    ? Colors.PRIMARY
-                    : Colors.LIGHT_GRAY_BORDER,
-              },
-            ]}
-            onPress={() => {
-              setSelectedDate(item.formatedDate);
-              GetMedicationList(item.formatedDate);
-            }}
-          >
-            {" "}
-            {/* {console.log("formatedDate=",item)}
-             */}
-            <Text
+        renderItem={({ item, index }) =>
+          item ? (
+            <TouchableOpacity
               style={[
-                styles.day,
+                styles.dateGroup,
                 {
-                  color: item.formatedDate == selectedDate ? "white" : "black",
+                  backgroundColor:
+                    item.formatedDate == selectedDate
+                      ? Colors.PRIMARY
+                      : Colors.LIGHT_GRAY_BORDER,
                 },
               ]}
+              onPress={() => {
+                setSelectedDate(item.formatedDate);
+                GetMedicationList(item.formatedDate);
+              }}
             >
-              {item.day}
-            </Text>
-            <Text
-              style={[
-                styles.date,
-                {
-                  color: item.formatedDate == selectedDate ? "white" : "black",
-                },
-              ]}
-            >
-              {item.date}
-            </Text>
-          </TouchableOpacity>
-        ) :null }
+              {" "}
+              {/* {console.log("formatedDate=",item)}
+               */}
+              <Text
+                style={[
+                  styles.day,
+                  {
+                    color:
+                      item.formatedDate == selectedDate ? "white" : "black",
+                  },
+                ]}
+              >
+                {item.day}
+              </Text>
+              <Text
+                style={[
+                  styles.date,
+                  {
+                    color:
+                      item.formatedDate == selectedDate ? "white" : "black",
+                  },
+                ]}
+              >
+                {item.date}
+              </Text>
+            </TouchableOpacity>
+          ) : null
+        }
       />
       {console.log("MEDLIST-2", medList)}
       {medList?.length > 0 ? (
@@ -133,7 +137,23 @@ export default function MedicationList() {
           data={medList}
           onRefresh={() => GetMedicationList(selectedDate)}
           refreshing={loading}
-          renderItem={({ item }) =>item? <MedicationCardItem medicine={item} />:null}
+          renderItem={({ item }) =>
+            item ? (
+              <TouchableOpacity
+                onPress={() =>
+                  router.push({
+                    pathname: "/MedicationActionModal",
+                    params: {
+                      ...item,
+                      selectedDate: selectedDate,
+                    },
+                  })
+                }
+              >
+                <MedicationCardItem medicine={item} />
+              </TouchableOpacity>
+            ) : null
+          }
           keyExtractor={(item, index) => index.toString()}
         />
       ) : (
