@@ -1,8 +1,16 @@
 import { View, Text, Image, StyleSheet } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Colors from "@/constant/Colors";
 import Ionicons from "@expo/vector-icons/Ionicons";
-export default function MedicationCardItem({medicine}) {
+export default function MedicationCardItem({ medicine, selectedDate }) {
+  const [status, setStatus] = useState();
+  useEffect(() => {
+    CheckStatus();
+  }, [medicine]);
+  const CheckStatus = () => {
+    const data = medicine?.action?.find((item) => item.date == selectedDate);
+    setStatus(data);
+  };
   return (
     <View style={styles.container}>
       {console.log("MEDICINE", medicine)}
@@ -16,11 +24,10 @@ export default function MedicationCardItem({medicine}) {
             <Text style={{ fontSize: 22, fontWeight: "bold" }}>
               {medicine?.name}
             </Text>
-            {console.log("MEDICINE=",medicine)}
+            {console.log("MEDICINE=", medicine)}
             <Text style={{ fontSize: 17 }}>{medicine?.when}</Text>
             <Text style={{ color: "black" }}>
-              {medicine?.dose}{" "}
-              {medicine?.type?.name}
+              {medicine?.dose} {medicine?.type?.name}
             </Text>
           </View>
         </View>
@@ -31,6 +38,17 @@ export default function MedicationCardItem({medicine}) {
           {medicine?.reminder}
         </Text>
       </View>
+      {status?.date ? (
+        <View style={styles.statusContainer}>
+          {status?.status == "Taken" ? (
+            <Ionicons name="checkmark-circle" size={24} color={Colors.GREEN} />
+          ) : (
+            status?.status == "Missed" && (
+              <Ionicons name="close-circle" size={24} color="red" />
+            )
+          )}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -65,5 +83,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: Colors.LIGHT_GRAY_BORDER,
+  },
+  statusContainer: {
+    position: "absolute",
+    top: 5,
   },
 });

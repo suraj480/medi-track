@@ -1,13 +1,43 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
 import React from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Colors from "../../constant/Colors";
 import MedicationCardItem from "../../components/MedicationCardItem";
 import { Ionicons } from "@expo/vector-icons";
+import { arrayUnion, doc, updateDoc } from "firebase/firestore";
+import {db } from '../../config/FireBaseConfig'
+import moment from "moment";
 export default function MedicationActionModal() {
   const medicine = useLocalSearchParams();
   console.log("medicine", medicine);
   const router = useRouter();
+  const UpdateActionStatus = async (status) => {
+    try {
+      const docRef = doc(db, "medication", medicine?.docId);
+      await updateDoc(docRef, {
+        action: arrayUnion({
+          status: status,
+          time: moment().format("LT"),
+          date: medicine?.selectedDate,
+        }),
+      });
+      Alert.alert(status, "Response saved!", [
+        {
+          text: "ok",
+          onPress: () => router.replace("(tabs)"),
+        },
+      ]);
+    } catch (e) {
+      console.log(e);
+    }
+  };
   return (
     <View style={styles.container}>
       <Image
@@ -25,7 +55,10 @@ export default function MedicationActionModal() {
       <Text style={{ fontSize: 18 }}>It's time to take</Text>
       <MedicationCardItem medicine={medicine} />
       <View style={styles.btnContainer}>
-        <TouchableOpacity style={styles.closeBtn}>
+        <TouchableOpacity
+          style={styles.closeBtn}
+          onPress={() => UpdateActionStatus("Missed")}
+        >
           <Ionicons name="close-outline" size={24} color="red" />
           <Text
             style={{
@@ -38,15 +71,18 @@ export default function MedicationActionModal() {
         </TouchableOpacity>
 
         <View>
-          <TouchableOpacity style={styles.successBtn}>
+          <TouchableOpacity
+            style={styles.successBtn}
+            onPress={() => UpdateActionStatus("Taken")}
+          >
             <Ionicons name="checkmark-outline" size={24} color="white" />
             <Text
               style={{
                 fontSize: 20,
-                color: "whtite",
+                color: "white",
               }}
             >
-              Missed
+              Taken
             </Text>
           </TouchableOpacity>
         </View>

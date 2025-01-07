@@ -150,7 +150,10 @@ export default function MedicationList() {
                   })
                 }
               >
-                <MedicationCardItem medicine={item} />
+                <MedicationCardItem
+                  medicine={item}
+                  selectedDate={selectedDate}
+                />
               </TouchableOpacity>
             ) : null
           }
