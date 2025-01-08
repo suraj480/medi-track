@@ -8,8 +8,19 @@ export default function MedicationCardItem({ medicine, selectedDate }) {
     CheckStatus();
   }, [medicine]);
   const CheckStatus = () => {
-    const data = medicine?.action?.find((item) => item.date == selectedDate);
+    console.log("CHECKIN",medicine)
+   
+    console.log("Medicine:", medicine);
+  if (Array.isArray(medicine?.action)) {
+    const data = medicine.action.find((item) => item?.date == selectedDate);
+    console.log("Found Data:", data);
     setStatus(data);
+  } else {
+    console.warn("Action is not an array or is undefined. Medicine:", medicine);
+    setStatus(null);
+  }
+    // const data =medicine && medicine?.action?.find((item) => item?.date == selectedDate);
+   // setStatus(data);
   };
   return (
     <View style={styles.container}>
