@@ -1,6 +1,6 @@
 import moment from "moment";
 export const FormatDate = (timeStamp) => {
-  return new Date(timeStamp).setHours(0,0,0,0);
+  return new Date(timeStamp).setHours(0, 0, 0, 0);
 };
 
 export const formatDateForText = (date) => {
@@ -37,4 +37,17 @@ export const GetDateRangeToDisplay = () => {
     });
   }
   return dateList;
+};
+
+export const GetPrevDateRangeToDisplay = () => {
+  const dates = [];
+  for (let i = 0; i <= 7; i++) {
+    const date = moment().subtract(i, "days");
+    dates.push({
+      date: date.format("DD"),
+      day: date.format("dd"),
+      formatedDate: date.format("L"), // Fixed the typo here as well
+    });
+  }
+  return dates; // Ensure the dates array is returned
 };
